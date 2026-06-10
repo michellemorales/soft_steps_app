@@ -34,7 +34,9 @@ Node.js is a JavaScript runtime that allows you to run JavaScript on your comput
   npm --version
   ```
 
-#### 2. Xcode (Mac only - for iOS development)
+**For step 2, make sure you select the appropriate operating system** ⬇️
+
+#### 2A. Xcode (Mac only - for iOS development)
 Xcode is Apple's development environment required for iOS app development.
 
 **Installation:**
@@ -52,9 +54,37 @@ Xcode is Apple's development environment required for iOS app development.
 xcode-select -p
 # Should return: /Applications/Xcode.app/Contents/Developer
 ```
+#### 2B: Android Studio + Android Emulator (Windows Users)
 
+Windows users cannot run the iOS Simulator. Instead, use Android Studio and an Android Emulator.
+
+**Installation:**
+
+1. Download Android Studio using the following link:
+   https://developer.android.com/studio
+
+2. Run the installer and accept default settings
+
+3. Open Android Studio
+
+4. Follow these instructions to get the emulator set-up: https://docs.expo.dev/workflow/android-studio-emulator/ (Make sure to choose the appropriate operating system)
+
+6. Once you have finished creating the emulator device, you are ready to move on to the next section. 
+
+**Verify installation:**
+
+Open a Command Prompt and run:
+
+```bash
+adb devices
+```
+
+You should see the device you created listed. 
 
 #### 3. Expo Go App (for testing on physical device)
+
+This might be helpful in scenarios where we want to demo the app during conferences / poster presentations. You can skip this section for now!
+
 Install the Expo Go app on your iPhone from the App Store:
 - Search for "Expo Go" in the App Store
 - Install the app
@@ -181,7 +211,9 @@ soft_steps_app/
 │   ├── screens/           # App screens
 │   │   └── BraveStepScreen.tsx
 │   │   ├── HomeScreen.tsx
-│   │   └── SignUpScreen.tsx
+│   │   ├── ReflectionSpaceScreen.tsx
+│   │   ├── SignUpScreen.tsx
+│   │   └── SurveyScreen.tsx
 │   ├── components/        # Reusable components
 │   │   └── ui/
 │   │       ├── Button.tsx
@@ -206,7 +238,7 @@ soft_steps_app/
 
 ## Running the App
 
-### Start the Development Server
+### Start the Front-end Development Server
 
 ```bash
 # Clear cache and start Expo
@@ -216,16 +248,22 @@ npx expo start --clear
 npx expo start
 ```
 
-### Running on iOS Simulator
+### Running on iOS Simulator / Android Emulator
 
+#### Running on iOS 
 1. Make sure Xcode is installed
-2. Open iOS Simulator manually:
-   ```bash
-   open -a Simulator
-   ```
-3. Once the simulator is running, press `i` in the Expo terminal
+2. Make sure Xcode command line tools are installed
+3. Once you run the expo command  press `i` in the Expo terminal
 
-### Running on Physical iPhone
+
+#### Running on Android 
+1. Make sure Android Studio is installed
+2. Make sure a device was created in Android Studio
+3. Once you run the expo command  press `a` in the Expo terminal
+4. Copy the server link you see in Terminal (exp://192.168.1.152:8081) and paste that into the Expo Go app in the emulator, the app should then load
+
+
+#### Running on Physical iPhone
 
 1. Install Expo Go app from the App Store on your iPhone
 2. Scan the QR code shown in the terminal with your iPhone camera
@@ -302,18 +340,15 @@ MONGODB_URI=mongodb://localhost:27017/soft_steps_app
 - ✅ Form validation (email, password, name)
 - ✅ Loading states
 - ✅ Error handling
-- 🚧 User Authentication (coming soon)
-- 🚧 Navigation (coming soon)
-- 🚧 Additional screens (Welcome, Home, Survey, etc.)
+- ✅ User Authentication 
+- ✅ Navigation 
+- ✅ Additional screens (Welcome, Home, Survey, etc.)
 
 ## Development
 
 ### Current Screens
 
 - **SignUpScreen**: User registration with form validation
-
-### Planned Screens
-
 - SignUpScreen 
 - HomeScreen
 - SurveyScreen
