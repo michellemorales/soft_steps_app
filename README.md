@@ -81,79 +81,16 @@ adb devices
 
 You should see the device you created listed. 
 
-#### 3. Expo Go App (for testing on physical device)
+#### 2C. Expo Go App (for testing on physical device)
 
-This might be helpful in scenarios where we want to demo the app during conferences / poster presentations. You can skip this section for now!
+This might be helpful in scenarios where we want to demo the app during conferences / poster presentations. Or if you do not have enough space on your laptop to download Xcode / Android Studio. 
 
 Install the Expo Go app on your iPhone from the App Store:
 - Search for "Expo Go" in the App Store
 - Install the app
-- You'll use this to scan QR codes and test your app
-
-#### 4. Python 3.8+ (for Backend)
-Python is required for the FastAPI backend.
-
-**Installation:**
-- **Mac**:
-  ```bash
-  # Using Homebrew
-  brew install python3
-  ```
-- **Windows**: Download from [python.org](https://www.python.org/downloads/)
-- **Verify installation**:
-  ```bash
-  python3 --version
-  # or
-  python --version
-  ```
-
-#### 5. MongoDB (for Database)
-MongoDB is the database system for storing app data.
-
-**Prerequisites for MongoDB:**
-First, you need Docker installed:
-- **Mac**: Download [Docker Desktop for Mac](https://www.docker.com/products/docker-desktop/)
-- **Windows**: Download [Docker Desktop for Windows](https://www.docker.com/products/docker-desktop/)
-- Install and start Docker Desktop
-
-**Installation:**
-
-To install and run MongoDB, run the following commands in your MacOS Terminal or Windows CommandPrompt:
-
-1. Pull the latest MongoDB Docker image:
-   ```bash
-   docker pull mongo
-   ```
-
-2. Start the MongoDB container using the Docker image:
-   ```bash
-   docker run -d -p 27017-27019:27017-27019 --name mongodb --restart always mongo
-   ```
-
-That's it! MongoDB is now running in its own container.
-
-**Interacting with MongoDB:**
-
-You can interact with it using **MongoDB Compass** (GUI - Recommended):
-1. Download [MongoDB Compass](https://www.mongodb.com/products/compass)
-2. Install and launch Compass
-3. MongoDB has no password, so you can just launch Compass with default settings
-4. Connection string: `mongodb://localhost:27017`
-
-**Useful Docker Commands:**
-```bash
-# Check if MongoDB container is running
-docker ps
-
-# Stop MongoDB
-docker stop mongodb
-
-# Start MongoDB
-docker start mongodb
-
-# Remove MongoDB container (if you need to start fresh)
-docker rm -f mongodb
-```
+- Set-up a free Expo Go account
+- Once you run the front-end command, you'll scan the QR code with your phone
+- Your phone should autmomatically laucn the app for you to test
 
 ### Optional Tools
 
@@ -327,8 +264,10 @@ Create a `.env` file in the root directory (not tracked in git):
 
 ```env
 API_URL=http://localhost:8000/api
-MONGODB_URI=mongodb://localhost:27017/soft_steps_app
+MONGODB_URL=mongodb+srv://<db_username>:<db_password>@softstepscluster.clhhqzv.mongodb.net/?appName=SoftStepsCluster
+DATABASE_NAME=soft_steps_db
 ```
+
 
 
 
