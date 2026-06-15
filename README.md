@@ -4,10 +4,30 @@ A mobile iOS application built with React Native (Expo), FastAPI backend, and Mo
 
 ## Tech Stack
 
-- **Frontend**: React Native with Expo
-- **Backend**: Python (FastAPI)
-- **Database**: MongoDB
-- **Language**: TypeScript
+### Mobile App
+
+* **React Native** – Lets us build one application that works on both iPhone and Android devices.
+* **Expo** – Simplifies React Native development, testing, and deployment.
+
+### Backend Server
+
+* **Python** – Programming language used for backend development.
+* **FastAPI** – Handles requests from the mobile app, manages application logic, and communicates with the database.
+
+### Database
+
+* **MongoDB** – Stores user accounts, survey responses, and other application data.
+
+### Programming Languages
+
+* **TypeScript** – Used to build the React Native mobile application.
+* **Python** – Used to build the backend API and services.
+
+### Collaboration Tools
+
+* **Git** – Tracks code changes and enables version control.
+* **GitHub** – Hosts the codebase and supports team collaboration through pull requests, issues, and code reviews.
+
 
 ## Prerequisites
 
