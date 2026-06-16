@@ -262,33 +262,68 @@ npm cache clean --force
 
 ### FastAPI Backend
 
+Set-up the Python virtual environment and install the dependencies one time:
+
 ```bash
 # Navigate to backend directory
-cd backend
+cd soft_steps_backend
 
 # Create virtual environment
 python3 -m venv soft_steps
 source soft_steps/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
-pip install fastapi uvicorn pymongo python-jose passlib bcrypt
+pip install -r requirements.txt
 
-# Run the server
-python -m uvicorn app.main:app --reload
 ```
 
+To run the back-end, make sure you have the virtual environment activated then:
+
+```bash
+cd soft_steps_backend
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+For the back-end and front-end to properly work make sure you have the correct environment variables:
 
 ## Environment Variables
 
-Create a `.env` file in the root directory (not tracked in git):
+### Back-end
+
+Create a `.env` file in the root directory (`soft_steps_backend`), fyi this file is not tracked in git. This file is specific to your personal set-up and is only stored locally on your laptop. 
+
+If you are testing via the Xcode simulator / Android Studio emulator, your `.env` file should look like this:
 
 ```env
-API_URL=http://localhost:8000/api
 MONGODB_URL=mongodb+srv://<db_username>:<db_password>@softstepscluster.clhhqzv.mongodb.net/?appName=SoftStepsCluster
 DATABASE_NAME=soft_steps_db
 ```
 
+For the  `MONGODB_URL` replace:
 
+`<db_username>` with the MongoDB Atlas username provided to you
+`<db_password>` with the MongoDB Atlas password provided to you
+
+
+### Front-end
+
+Create a `.env` file in the root directory (soft_steps_app). This file is also not tracked in Git and should never be committed to the repository.
+
+#### Testing with Xcode Simulator or Android Emulator
+
+If you are running the app in a simulator on the same computer as the backend:
+
+```env
+EXPO_PUBLIC_API_URL=http://127.0.0.1:8000/api
+```
+
+#### Testing with Expo Go on a Physical Phone
+
+If you are running the app on your phone using Expo Go, replace 127.0.0.1 with your computer's local IP address:
+
+```env
+EXPO_PUBLIC_API_URL=http://192.168.1.100:8000/api
+```
 
 
 
