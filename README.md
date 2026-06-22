@@ -269,7 +269,7 @@ Set-up the Python virtual environment and install the dependencies one time:
 cd soft_steps_backend
 
 # Create virtual environment
-python3 -m venv soft_steps
+python -m venv soft_steps
 source soft_steps/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
