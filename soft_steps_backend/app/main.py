@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.services.database import connect_to_mongo, close_mongo_connection
-from app.routes import auth, reflection
+from app.routes import auth, reflection, brave_steps
 
 app = FastAPI(title=settings.PROJECT_NAME)
 
@@ -31,6 +31,8 @@ app.include_router(
     prefix=f"{settings.API_V1_PREFIX}/reflection",
     tags=["reflection"]
 )
+# Add in brave step endpoint
+app.include_router(brave_steps.router, prefix="/api")
 
 @app.get("/")
 async def root():
