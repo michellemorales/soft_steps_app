@@ -21,7 +21,6 @@ const braveSteps = [
   'Sit with a group in class',
   'Ask a question in discussion',
   'Join a study group',
-  'Attend office hours',
   'Introduce myself to someone new',
 ];
 
