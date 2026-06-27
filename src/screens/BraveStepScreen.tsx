@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { Theme } from '../constants/theme';
 import { Button } from '../components/ui';
@@ -26,7 +28,20 @@ const braveSteps = [
 
 export default function BraveStepScreen() {
   const [selectedStep, setSelectedStep] = useState<string | null>(null);
+  const [steps, setSteps] = useState(braveSteps);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+  useEffect(() => {
+    loadSteps();
+  }, []);
+
+  const loadSteps = async () => {
+    const savedSteps = await AsyncStorage.getItem('braveSteps');
+
+    if (savedSteps) {
+      setSteps(JSON.parse(savedSteps));
+    }
+  };
 
   return (
     <ScrollView
@@ -40,29 +55,59 @@ export default function BraveStepScreen() {
       </Text>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Suggested Steps</Text>
+        <View style={styles.sectionHeader}>
+  <Text style={styles.sectionTitle}>Suggested Steps</Text>
 
-        {braveSteps.map((step) => {
+  {steps.length < braveSteps.length && (
+  <TouchableOpacity
+    onPress={() => {
+      setSteps(braveSteps);
+      setSelectedStep(null);
+    }}
+  >
+    <Text style={styles.restoreText}>↺ Restore</Text>
+  </TouchableOpacity>
+)}
+</View>
+
+        {steps.map((step) => {
           const isSelected = selectedStep === step;
 
           return (
-            <TouchableOpacity
-              key={step}
-              style={[
-                styles.stepCard,
-                isSelected && styles.selectedCard,
-              ]}
-              onPress={() => setSelectedStep(step)}
-            >
-              <Text
-                style={[
-                  styles.stepText,
-                  isSelected && styles.selectedText,
-                ]}
-              >
-                {step}
-              </Text>
-            </TouchableOpacity>
+           <View
+  key={step}
+  style={[
+    styles.stepCard,
+    isSelected && styles.selectedCard,
+  ]}
+>
+
+  <TouchableOpacity
+    style={{ flex: 1 }}
+    onPress={() => setSelectedStep(step)}
+  >
+    <Text
+      style={[
+        styles.stepText,
+        isSelected && styles.selectedText,
+      ]}
+    >
+      {step}
+    </Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    onPress={async () => {
+  const updatedSteps = steps.filter((item) => item !== step);
+
+  setSteps(updatedSteps);
+  await AsyncStorage.setItem('braveSteps', JSON.stringify(updatedSteps));
+}}
+  >
+    <Text style={styles.deleteIcon}>✕</Text>
+  </TouchableOpacity>
+
+</View>
           );
         })}
       </View>
@@ -114,6 +159,9 @@ const styles = StyleSheet.create({
     paddingVertical: 22,
     paddingHorizontal: 20,
     marginBottom: Theme.spacing.md,
+     flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
   },
 
   selectedCard: {
@@ -128,4 +176,21 @@ const styles = StyleSheet.create({
   selectedText: {
     color: Theme.colors.white,
   },
+  deleteIcon: {
+  fontSize: 22,
+  color: Theme.colors.textSecondary,
+  marginLeft: 10,
+},
+sectionHeader: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginBottom: Theme.spacing.md,
+},
+
+restoreText: {
+  color: Theme.colors.primary,
+  fontSize: Theme.fontSize.md,
+  fontWeight: '600',
+},
 });

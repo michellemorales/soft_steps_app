@@ -24,7 +24,7 @@ export default function HomeScreen() {
 
         <TouchableOpacity
           style={styles.outlineButton}
-          onPress={() => navigation.navigate('BraveStep')}
+         onPress={() => navigation.navigate('BraveStep')}
         >
           <Text style={styles.outlineButtonText}>Change My Step</Text>
         </TouchableOpacity>
