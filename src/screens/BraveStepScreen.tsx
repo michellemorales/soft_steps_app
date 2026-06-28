@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   ScrollView,
   TextInput,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -47,10 +49,16 @@ export default function BraveStepScreen() {
     }
   };
 
-  return (
+ return (
+  <KeyboardAvoidingView
+    style={{ flex: 1 }}
+    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    keyboardVerticalOffset={20}
+  >
     <ScrollView
       contentContainerStyle={styles.container}
       showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
     >
       <Text style={styles.title}>Your Brave Step</Text>
 
@@ -194,13 +202,33 @@ export default function BraveStepScreen() {
 )}
 
       <Button
-        title="Continue"
-        // onPress={() => console.log(selectedStep)}
-        onPress={() => navigation.navigate('Home')}
-        disabled={!selectedStep}
-      />
-    </ScrollView>
-  );
+  title="Continue"
+  onPress={async () => {
+    if (selectedStep) {
+      await AsyncStorage.setItem(
+        'selectedBraveStep',
+        selectedStep
+      );
+
+      const existingStartDate = await AsyncStorage.getItem(
+        'braveStepStartDate'
+      );
+
+      if (!existingStartDate) {
+        await AsyncStorage.setItem(
+          'braveStepStartDate',
+          new Date().toISOString()
+        );
+      }
+    }
+
+    navigation.navigate('Home');
+  }}
+  disabled={!selectedStep}
+/>
+       </ScrollView>
+  </KeyboardAvoidingView>
+);
 }
 
 const styles = StyleSheet.create({
