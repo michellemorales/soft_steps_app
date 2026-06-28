@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  TextInput,
 } from 'react-native';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -29,6 +30,9 @@ const braveSteps = [
 export default function BraveStepScreen() {
   const [selectedStep, setSelectedStep] = useState<string | null>(null);
   const [steps, setSteps] = useState(braveSteps);
+  const [customStep, setCustomStep] = useState('');
+  const [showSuggestionArea, setShowSuggestionArea] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   useEffect(() => {
@@ -60,10 +64,20 @@ export default function BraveStepScreen() {
 
   {steps.length < braveSteps.length && (
   <TouchableOpacity
-    onPress={() => {
-      setSteps(braveSteps);
-      setSelectedStep(null);
-    }}
+    onPress={async () => {
+  const restoredSteps = [
+    ...steps,
+    ...braveSteps.filter((step) => !steps.includes(step)),
+  ];
+
+  setSteps(restoredSteps);
+  setSelectedStep(null);
+
+  await AsyncStorage.setItem(
+    'braveSteps',
+    JSON.stringify(restoredSteps)
+  );
+}}
   >
     <Text style={styles.restoreText}>↺ Restore</Text>
   </TouchableOpacity>
@@ -111,6 +125,73 @@ export default function BraveStepScreen() {
           );
         })}
       </View>
+
+      <Text style={styles.sectionTitle}>
+  Don't see one that fits? Write your own!
+</Text>
+
+<TextInput
+  style={styles.input}
+  placeholder="Type your own brave step..."
+  placeholderTextColor={Theme.colors.textSecondary}
+  value={customStep}
+  onChangeText={setCustomStep}
+/>
+<View style={styles.customButtonsRow}>
+  <TouchableOpacity
+    style={styles.suggestionsButton}
+    onPress={() => {
+      setIsGenerating(true);
+
+      setTimeout(() => {
+        setIsGenerating(false);
+        setShowSuggestionArea(true);
+      }, 1000);
+    }}
+  >
+    <Text style={styles.suggestionsButtonText}>
+      {isGenerating ? '⏳ Generating...' : '✨ Get suggestions'}
+    </Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    style={styles.addStepButton}
+    onPress={async () => {
+      if (!customStep.trim()) {
+        return;
+      }
+
+      const newStep = customStep.trim();
+      const updatedSteps = [...steps, newStep];
+
+      setSteps(updatedSteps);
+      setSelectedStep(newStep);
+      setCustomStep('');
+
+      await AsyncStorage.setItem(
+        'braveSteps',
+        JSON.stringify(updatedSteps)
+      );
+    }}
+  >
+    <Text style={styles.addStepButtonText}>+ Add step</Text>
+  </TouchableOpacity>
+</View>
+
+
+{showSuggestionArea && (
+  <View style={styles.suggestionArea}>
+    <Text style={styles.similarTitle}>
+      Similar steps based on your input...
+    </Text>
+
+    <View style={styles.placeholderCard}>
+  <Text style={styles.placeholderText}>
+ Finding similar brave steps...
+  </Text>
+   </View>
+  </View>
+)}
 
       <Button
         title="Continue"
@@ -191,6 +272,75 @@ sectionHeader: {
 restoreText: {
   color: Theme.colors.primary,
   fontSize: Theme.fontSize.md,
+  fontWeight: '600',
+},
+input: {
+  backgroundColor: Theme.colors.card,
+  borderRadius: 22,
+  paddingHorizontal: 20,
+  paddingVertical: 18,
+  fontSize: Theme.fontSize.md,
+  color: Theme.colors.text,
+  marginBottom: Theme.spacing.xl,
+},
+suggestionsButton: {
+  borderWidth: 1.5,
+  borderColor: Theme.colors.primary,
+  borderRadius: 22,
+  backgroundColor: Theme.colors.card,
+  height: 42,
+  paddingHorizontal: 18,
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+
+suggestionsButtonText: {
+  color: Theme.colors.textSecondary,
+  fontSize: Theme.fontSize.sm,
+  fontStyle: 'italic',
+},
+suggestionArea: {
+  marginBottom: Theme.spacing.lg,
+},
+
+similarTitle: {
+  fontSize: Theme.fontSize.md,
+  color: Theme.colors.text,
+  marginBottom: Theme.spacing.md,
+},
+
+placeholderText: {
+  color: Theme.colors.textSecondary,
+  fontSize: Theme.fontSize.md,
+  fontStyle: 'italic',
+},
+placeholderCard: {
+  backgroundColor: '#ECECEC',
+  borderRadius: 22,
+  paddingVertical: 18,
+  paddingHorizontal: 20,
+},
+customButtonsRow: {
+  flexDirection: 'row',
+  justifyContent: 'flex-end',
+  alignItems: 'center',
+  gap: 12,
+  marginTop: -12,
+  marginBottom: Theme.spacing.lg,
+},
+
+addStepButton: {
+  backgroundColor: Theme.colors.primary,
+  borderRadius: 22,
+  height: 42,
+  paddingHorizontal: 20,
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+
+addStepButtonText: {
+  color: Theme.colors.white,
+  fontSize: Theme.fontSize.sm,
   fontWeight: '600',
 },
 });
