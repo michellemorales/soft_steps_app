@@ -54,6 +54,7 @@ setProgressDays(Math.min(differenceInDays, 7));
 };
 
   return (
+  
     <ScrollView
   contentContainerStyle={styles.container}
   showsVerticalScrollIndicator={false}
