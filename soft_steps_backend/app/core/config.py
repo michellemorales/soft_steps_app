@@ -14,6 +14,10 @@ class Settings(BaseSettings):
     # API Settings
     API_V1_PREFIX: str = "/api"
     PROJECT_NAME: str = "Soft Steps API"
+
+    #Gemini
+    GEMINI_API_KEY: str
+    GEMINI_MODEL: str = "gemini-2.5-flash-lite"
     
     class Config:
         env_file = ".env"

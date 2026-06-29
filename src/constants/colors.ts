@@ -23,4 +23,5 @@ export const Colors = {
   // UI
   border: '#D6E2DE',
   white: '#FFFFFF',
+  surface: '#FFFFFF',
 };

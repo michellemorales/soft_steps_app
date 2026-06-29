@@ -15,7 +15,7 @@ export type RootStackParamList = {
   Home: undefined;
   BraveStep: undefined;
   ReflectionSpace: undefined;
-  SurveyScreen: undefined;
+  Survey: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
