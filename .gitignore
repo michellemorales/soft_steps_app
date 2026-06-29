@@ -39,3 +39,10 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+# Environment files
+.env
+soft_steps_backend/.env
+
+# Python cache
+__pycache__/
+*.pyc
