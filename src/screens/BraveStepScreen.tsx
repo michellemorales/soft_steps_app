@@ -1,3 +1,4 @@
+import { braveStepAPI } from '../services/api';
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -35,6 +36,9 @@ export default function BraveStepScreen() {
   const [customStep, setCustomStep] = useState('');
   const [showSuggestionArea, setShowSuggestionArea] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [aiSuggestions, setAiSuggestions] = useState<
+  { title: string; situation: string; fear_level: number }[]
+>([]);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   useEffect(() => {
@@ -148,14 +152,24 @@ export default function BraveStepScreen() {
 <View style={styles.customButtonsRow}>
   <TouchableOpacity
     style={styles.suggestionsButton}
-    onPress={() => {
-      setIsGenerating(true);
+    onPress={async () => {
+  if (!customStep.trim()) return;
 
-      setTimeout(() => {
-        setIsGenerating(false);
-        setShowSuggestionArea(true);
-      }, 1000);
-    }}
+  try {
+    setIsGenerating(true);
+
+    const response = await braveStepAPI.getAISuggestions(customStep);
+
+    console.log('AI suggestions response:', response.data);
+
+    setAiSuggestions(response.data.suggestions);
+    setShowSuggestionArea(true);
+  } catch (error) {
+    console.error('Error getting AI suggestions:', error);
+  } finally {
+    setIsGenerating(false);
+  }
+}}
   >
     <Text style={styles.suggestionsButtonText}>
       {isGenerating ? '⏳ Generating...' : '✨ Get suggestions'}
@@ -193,11 +207,28 @@ export default function BraveStepScreen() {
       Similar steps based on your input...
     </Text>
 
-    <View style={styles.placeholderCard}>
-  <Text style={styles.placeholderText}>
- Finding similar brave steps...
-  </Text>
-   </View>
+    {aiSuggestions.map((suggestion, index) => (
+  <TouchableOpacity
+    key={index}
+    style={styles.placeholderCard}
+    onPress={async () => {
+      const newStep = suggestion.title;
+      const updatedSteps = [...steps, newStep];
+
+      setSteps(updatedSteps);
+      setSelectedStep(newStep);
+
+      await AsyncStorage.setItem(
+        'braveSteps',
+        JSON.stringify(updatedSteps)
+      );
+    }}
+  >
+    <Text style={styles.placeholderText}>
+      + {suggestion.title}
+    </Text>
+  </TouchableOpacity>
+  ))}
   </View>
 )}
 

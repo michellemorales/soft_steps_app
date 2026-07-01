@@ -2,7 +2,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const API_URL = __DEV__ 
-? process.env.EXPO_PUBLIC_API_URL || 'http://127.0.0.1:8000/api' // Your FastAPI backend
+? process.env.EXPO_PUBLIC_API_URL ||'http://127.0.0.1:8000/api'// Your FastAPI backend
   : 'https://your-production-api.com/api';
 
 console.log('API URL:', API_URL);
@@ -27,5 +27,10 @@ api.interceptors.request.use(
     return Promise.reject(error);
   }
 );
-
+export const braveStepAPI = {
+  getAISuggestions: (customStep: string) =>
+   api.post('/brave-steps/ai-suggestions', {
+  user_input: customStep,
+}),
+};
 export default api;
