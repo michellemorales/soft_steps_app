@@ -32,9 +32,17 @@ def generate_suggestions(user_input: str) -> list[BraveStepSuggestion]:
         contents=prompt,
         config=types.GenerateContentConfig(
             response_mime_type="application/json",
+            response_schema=BraveStepAIResponse,
         ),
     )
-    
+    print("Prompt tokens:", response.usage_metadata.prompt_token_count)
+    print("Output tokens:", response.usage_metadata.candidates_token_count)
+    print("Total tokens:", response.usage_metadata.total_token_count)
+    print("RAW RESPONSE:", response.text)
+
+    if response.parsed:
+        return response.parsed.suggestions
+
     ai_response = BraveStepAIResponse.model_validate_json(response.text)
 
     return ai_response.suggestions
