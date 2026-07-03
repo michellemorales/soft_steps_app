@@ -1,3 +1,4 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { braveStepAPI } from '../services/api';
 import React, { useEffect, useState } from 'react';
 import {
@@ -64,6 +65,13 @@ export default function BraveStepScreen() {
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
     >
+      <SafeAreaView>
+        <TouchableOpacity
+  style={styles.backButton}
+  onPress={() => navigation.navigate('Home')}
+>
+  <Text style={styles.backButtonText}>← Back</Text>
+</TouchableOpacity>
       <Text style={styles.title}>Your Brave Step</Text>
 
       <Text style={styles.subtitle}>
@@ -231,6 +239,8 @@ export default function BraveStepScreen() {
   ))}
   </View>
 )}
+
+      </SafeAreaView>
 
       <Button
   title="Continue"
@@ -401,5 +411,15 @@ addStepButtonText: {
   color: Theme.colors.white,
   fontSize: Theme.fontSize.sm,
   fontWeight: '600',
+},
+backButton: {
+  alignSelf: 'flex-start',
+  marginBottom: Theme.spacing.lg,
+},
+
+backButtonText: {
+  fontFamily: 'CormorantSemiBold',
+  fontSize: 18,
+  color: Theme.colors.textSecondary,
 },
 });

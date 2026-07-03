@@ -1,3 +1,4 @@
+import ConfettiCannon from 'react-native-confetti-cannon';
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -10,6 +11,7 @@ export default function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 const [braveStep, setBraveStep] = useState('Say hello to a classmate');
 const [isFirstTimeUser, setIsFirstTimeUser] = useState(true);
+const [showCelebration, setShowCelebration] = useState(false);
 const [progressDays, setProgressDays] = useState(0);
 useEffect(() => {
   loadBraveStep();
@@ -45,20 +47,46 @@ const differenceInTime = todayDay.getTime() - startDay.getTime();
 const differenceInDays =
   Math.floor(differenceInTime / (1000 * 60 * 60 * 24)) + 1;
 
-setProgressDays(Math.min(differenceInDays, 7));
+setProgressDays(Math.min(differenceInDays, 7)); 
     }
   } else {
     setIsFirstTimeUser(true);
     setProgressDays(0);
   }
 };
+useEffect(() => {
+  if (progressDays >= 7) {
+    setShowCelebration(true);
+  }
+}, [progressDays]);
+return (
+  <View style={{ flex: 1 }}>
 
-  return (
-  
+   {showCelebration && (
+  <View style={styles.confettiOverlay} pointerEvents="none">
+    <ConfettiCannon
+      count={180}
+      origin={{ x: 40, y: -20 }}
+      explosionSpeed={500}
+      fallSpeed={6000}
+      fadeOut
+    />
+
+    <ConfettiCannon
+      count={180}
+      origin={{ x: 350, y: -20 }}
+      explosionSpeed={500}
+      fallSpeed={6000}
+      fadeOut
+    />
+  </View>
+)}
+
     <ScrollView
-  contentContainerStyle={styles.container}
-  showsVerticalScrollIndicator={false}
->
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
+
       <Text style={styles.week}>
   {isFirstTimeUser ? 'Welcome!' : 'Welcome back!'}
 </Text>
@@ -67,30 +95,48 @@ setProgressDays(Math.min(differenceInDays, 7));
 </Text>
 
       {isFirstTimeUser ? (
-  <View style={styles.braveCard}>
-  <Text style={styles.braveStep}>
-    Welcome!
+  <View style={styles.firstTimeCard}>
+  <View style={styles.cornerDecoration} />
+  <View style={styles.cornerDecorationSmall} />
+
+  <Text style={styles.firstTimeLabel}>
+    LET'S BEGIN!
   </Text>
 
-  <Text style={styles.reminderText}>
-    We're excited to help you begin your journey toward building confidence.
+  <Text style={styles.firstTimeTitle}>
+    Choose your first brave step
   </Text>
 
-  <View style={styles.reminderBox}>
-    <Text style={styles.reminderText}>
-      Choose your first brave step to get started. We'll help you stay on track throughout the week.
+  <View style={styles.firstTimeMessageBox}>
+    <Text style={styles.firstTimeMessage}>
+      Start with one small step that feels possible today.
     </Text>
   </View>
+<View style={styles.stepsPreview}>
+  <View style={styles.previewRow}>
+    <View style={styles.previewCircle} />
+    <Text style={styles.previewText}>Choose a brave step</Text>
+  </View>
 
+  <View style={styles.previewRow}>
+    <View style={styles.previewCircle} />
+    <Text style={styles.previewText}>Practice it throughout the week</Text>
+  </View>
+
+  <View style={styles.previewRow}>
+    <View style={styles.previewCircle} />
+    <Text style={styles.previewText}>Celebrate your progress</Text>
+  </View>
+</View>
   <TouchableOpacity
     style={styles.outlineButton}
     onPress={() => navigation.navigate('BraveStep')}
   >
     <Text style={styles.outlineButtonText}>
-      Choose My Brave Step
+      Choose My Step
     </Text>
   </TouchableOpacity>
-  </View>
+</View>
 ) : (
   <View style={styles.braveCard}>
 
@@ -120,28 +166,65 @@ setProgressDays(Math.min(differenceInDays, 7));
 
   <TouchableOpacity
     style={styles.outlineButton}
-    onPress={() => navigation.navigate('BraveStep')}
+   onPress={async () => {
+  if (progressDays >= 7) {
+    await AsyncStorage.removeItem('selectedBraveStep');
+    await AsyncStorage.removeItem('braveStepStartDate');
+    setProgressDays(0);
+    setShowCelebration(false);
+  }
+
+  navigation.navigate('BraveStep');
+}}
   >
-    <Text style={styles.outlineButtonText}>Change My Step</Text>
+    <Text style={styles.outlineButtonText}>
+  {progressDays >= 7 ? 'Choose My Next Step' : 'Change My Step'}
+</Text>
   </TouchableOpacity>
 </View>
 )}
 
-{!isFirstTimeUser && (
+{isFirstTimeUser ? (
+  <View style={styles.progressCard}>
+    <Text style={styles.progressTitle}>Getting Started</Text>
+
+    <Text style={styles.gettingStartedText}>
+      Choose your first brave step to begin tracking your progress.
+    </Text>
+  </View>
+) : showCelebration ? (
+  <View style={styles.celebrationCard}>
+    <TouchableOpacity
+      style={styles.closeCelebration}
+      onPress={() => setShowCelebration(false)}
+    >
+      <Text style={styles.closeCelebrationText}>✕</Text>
+    </TouchableOpacity>
+
+    <Text style={styles.celebrationTitle}>Look how far you've come!</Text>
+
+    <Text style={styles.celebrationText}>
+      You completed your brave step for the week.
+    </Text>
+  </View>
+) : (
   <View style={styles.progressCard}>
     <View style={styles.progressHeader}>
       <Text style={styles.progressTitle}>Your Progress</Text>
-      <Text style={styles.progressDays}>{progressDays}/7 days</Text>
+
+      <Text style={styles.progressDays}>
+        {progressDays >= 7 ? '✔ Completed' : `${progressDays}/7 days`}
+      </Text>
     </View>
 
     <View style={styles.progressBarBackground}>
-  <View
-    style={[
-      styles.progressBarFill,
-      { width: `${(progressDays / 7) * 100}%` },
-    ]}
-  />
-</View>
+      <View
+        style={[
+          styles.progressBarFill,
+          { width: `${(progressDays / 7) * 100}%` },
+        ]}
+      />
+    </View>
   </View>
 )}
 
@@ -174,6 +257,7 @@ setProgressDays(Math.min(differenceInDays, 7));
         </Text>
       </View>
     </ScrollView>
+      </View>
   );
 }
 
@@ -391,5 +475,138 @@ cornerDecorationSmall: {
   backgroundColor: '#FFE9B5',
 
   opacity: 0.6,
+},
+firstTimeCard: {
+  backgroundColor: Theme.colors.card,
+  borderRadius: 28,
+  paddingHorizontal: 20,
+  paddingVertical: 30,
+  marginBottom: Theme.spacing.xl,
+  alignItems: 'center',
+  position: 'relative',
+  overflow: 'hidden',
+},
+
+firstTimeLabel: {
+  fontSize: 13,
+  color: Theme.colors.textSecondary,
+  letterSpacing: 1.5,
+  marginBottom: 10,
+},
+
+firstTimeTitle: {
+  fontFamily: 'CormorantSemiBold',
+  fontSize: 28,
+  color: Theme.colors.text,
+  textAlign: 'center',
+  marginBottom: 22,
+},
+
+firstTimeMessageBox: {
+  backgroundColor: Theme.colors.accentSoft,
+  borderRadius: 22,
+  width: '96%',
+  paddingVertical: 16,
+  paddingHorizontal: 18,
+  marginBottom: 26,
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+
+firstTimeMessage: {
+  fontSize: 16,
+  color: Theme.colors.textSecondary,
+  textAlign: 'center',
+  lineHeight: 24,
+  fontStyle: 'italic',
+},
+stepsPreview: {
+  width: '92%',
+  marginBottom: 28,
+},
+
+previewRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginBottom: 12,
+},
+
+previewCircle: {
+  width: 10,
+  height: 10,
+  borderRadius: 5,
+  backgroundColor: Theme.colors.primary,
+  marginRight: 12,
+},
+
+previewText: {
+  color: Theme.colors.textSecondary,
+  fontSize: 16,
+},
+gettingStartedText: {
+  marginTop: 10,
+  fontSize: 16,
+  color: Theme.colors.textSecondary,
+  lineHeight: 24,
+  textAlign: 'center',
+},
+celebrationCard: {
+  backgroundColor: Theme.colors.card,
+  borderRadius: 24,
+  padding: Theme.spacing.lg,
+  marginBottom: Theme.spacing.xl,
+  alignItems: 'center',
+  position: 'relative',
+},
+
+closeCelebration: {
+  position: 'absolute',
+  top: 14,
+  right: 16,
+},
+
+closeCelebrationText: {
+  fontSize: 20,
+  color: Theme.colors.textSecondary,
+},
+
+celebrationTitle: {
+  fontFamily: 'CormorantSemiBold',
+  fontSize: 30,
+  color: Theme.colors.text,
+  marginBottom: 8,
+  textAlign: 'center',
+},
+
+celebrationText: {
+  fontSize: 16,
+  color: Theme.colors.textSecondary,
+  textAlign: 'center',
+  lineHeight: 24,
+  marginBottom: 20,
+},
+
+newStepButton: {
+  borderWidth: 1.5,
+  borderColor: Theme.colors.primary,
+  borderRadius: 30,
+  paddingVertical: 14,
+  paddingHorizontal: 24,
+},
+
+newStepButtonText: {
+  fontFamily: 'CormorantSemiBold',
+  color: Theme.colors.primary,
+  fontSize: 18,
+},
+confettiOverlay: {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  zIndex: 9999,
+  elevation: 9999,
+  backgroundColor: 'rgba(0,0,0,0.15)',
 },
 });
