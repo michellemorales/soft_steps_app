@@ -8,4 +8,4 @@ python-dotenv==1.0.0
 pydantic-settings==2.1.0
 python-multipart==0.0.6
 pydantic[email]
-google-genai
+google-genai==2.10.0

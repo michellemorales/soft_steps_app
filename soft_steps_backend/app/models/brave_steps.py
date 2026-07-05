@@ -12,6 +12,10 @@ class BraveStepSuggestion(BaseModel):
     situation: Optional[str] = None
     fear_level: Optional[int] = None
 
+#This class receives last user_input and last steps generated
+class BraveStepAIRetry(BaseModel):
+    user_input: str
+    previous_suggestions: List[BraveStepSuggestion]
 
 #This class is used for the AI full response to user input
 class BraveStepAIResponse(BaseModel):

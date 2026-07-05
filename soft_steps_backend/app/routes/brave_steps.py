@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException
 from datetime import datetime
 from app.models.brave_steps import (BraveStepCreate, BraveStepAIRequest,
-                                     BraveStepAIResponse, BraveStepSuggestion)
+                                     BraveStepAIResponse, BraveStepAIRetry)
 from app.services.database import get_database
-from app.services.brave_step_ai import generate_suggestions
+from app.services.brave_step_ai import generate_suggestions, generate_retry_suggestions
 
 router = APIRouter(prefix="/brave-steps", tags=["brave-steps"])
 
@@ -12,6 +12,15 @@ router = APIRouter(prefix="/brave-steps", tags=["brave-steps"])
 @router.post("/ai-suggestions", response_model=BraveStepAIResponse)
 async def suggest_brave_step(request: BraveStepAIRequest):
     generated_suggestions = generate_suggestions(request.user_input)
+    return BraveStepAIResponse(suggestions=generated_suggestions)
+
+#Retry Route
+@router.post("/ai-suggestions/retry", response_model=BraveStepAIResponse)
+async def retry_brave_step_suggestions(request: BraveStepAIRetry):
+    generated_suggestions = generate_retry_suggestions(
+        request.user_input,
+        request.previous_suggestions,
+    )
     return BraveStepAIResponse(suggestions=generated_suggestions)
 
 
