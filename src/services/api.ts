@@ -32,5 +32,11 @@ export const braveStepAPI = {
    api.post('/brave-steps/ai-suggestions', {
   user_input: customStep,
 }),
+  
+  retryAISuggestions: (customStep: string, previousSuggestions: any[]) => 
+    api.post('/brave-steps/ai-suggestions/retry', {
+      user_input: customStep,
+      previous_suggestions: previousSuggestions,
+    }),
 };
 export default api;

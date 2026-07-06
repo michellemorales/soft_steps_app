@@ -10,6 +10,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -41,6 +42,10 @@ export default function BraveStepScreen() {
   { title: string; situation: string; fear_level: number }[]
 >([]);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const normalizeStep = (step: string) => step.trim().toLowerCase();
+  const stepAlreadyExists = (newStep: string) => {
+    return steps.some((step) => normalizeStep(step) === normalizeStep(newStep));
+  }
 
   useEffect(() => {
     loadSteps();
@@ -166,7 +171,10 @@ export default function BraveStepScreen() {
   try {
     setIsGenerating(true);
 
-    const response = await braveStepAPI.getAISuggestions(customStep);
+    const response = 
+      showSuggestionArea && aiSuggestions.length > 0
+      ? await braveStepAPI.retryAISuggestions(customStep, aiSuggestions)
+      : await braveStepAPI.getAISuggestions(customStep);
 
     console.log('AI suggestions response:', response.data);
 
@@ -180,7 +188,11 @@ export default function BraveStepScreen() {
 }}
   >
     <Text style={styles.suggestionsButtonText}>
-      {isGenerating ? '⏳ Generating...' : '✨ Get suggestions'}
+      {isGenerating 
+      ? '⏳ Generating...' 
+      : showSuggestionArea
+      ? '↺ Retry suggestions'
+      : '✨ Get suggestions'}
     </Text>
   </TouchableOpacity>
 
@@ -192,6 +204,12 @@ export default function BraveStepScreen() {
       }
 
       const newStep = customStep.trim();
+
+      if(stepAlreadyExists(newStep)){
+        Alert.alert("Step already added","This brave step is already in your list.");
+        return;
+      }
+
       const updatedSteps = [...steps, newStep];
 
       setSteps(updatedSteps);
@@ -220,7 +238,13 @@ export default function BraveStepScreen() {
     key={index}
     style={styles.placeholderCard}
     onPress={async () => {
-      const newStep = suggestion.title;
+      const newStep = suggestion.title.trim();
+
+      if(stepAlreadyExists(newStep)){
+        Alert.alert("Step already added", "This brave step is already in your list.");
+        return;
+      }
+
       const updatedSteps = [...steps, newStep];
 
       setSteps(updatedSteps);
