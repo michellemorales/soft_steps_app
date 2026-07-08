@@ -1,24 +1,33 @@
 import ConfettiCannon from 'react-native-confetti-cannon';
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { Theme } from '../constants/theme';
-
+type CompletedStep = {
+  title: string;
+  completedAt: string;
+};
 export default function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 const [braveStep, setBraveStep] = useState('Say hello to a classmate');
 const [isFirstTimeUser, setIsFirstTimeUser] = useState(true);
 const [showCelebration, setShowCelebration] = useState(false);
 const [progressDays, setProgressDays] = useState(0);
+const [completedSteps, setCompletedSteps] = useState<CompletedStep[]>([]);
 useEffect(() => {
   loadBraveStep();
 }, []);
 const loadBraveStep = async () => {
   const savedStep = await AsyncStorage.getItem('selectedBraveStep');
   const savedStartDate = await AsyncStorage.getItem('braveStepStartDate');
+  const savedCompletedSteps = await AsyncStorage.getItem('completedSteps');
+
+if (savedCompletedSteps) {
+  setCompletedSteps(JSON.parse(savedCompletedSteps));
+}
   console.log('Saved start date:', savedStartDate);
 console.log('Today:', new Date().toISOString());
 
@@ -55,12 +64,37 @@ setProgressDays(Math.min(differenceInDays, 7));
   }
 };
 useEffect(() => {
-  if (progressDays >= 7) {
-    setShowCelebration(true);
-  }
+  const saveCompletedStep = async () => {
+    if (progressDays >= 7 && braveStep) {
+      setShowCelebration(true);
+
+      const alreadySaved = completedSteps.some(
+        (step) => step.title === braveStep
+      );
+
+      if (!alreadySaved) {
+        const updatedCompletedSteps = [
+          ...completedSteps,
+          {
+            title: braveStep,
+            completedAt: new Date().toISOString(),
+          },
+        ];
+
+        setCompletedSteps(updatedCompletedSteps);
+
+        await AsyncStorage.setItem(
+          'completedSteps',
+          JSON.stringify(updatedCompletedSteps)
+        );
+      }
+    }
+  };
+
+  saveCompletedStep();
 }, [progressDays]);
 return (
-  <View style={{ flex: 1 }}>
+   <SafeAreaView style={{ flex: 1 }}>
 
    {showCelebration && (
   <View style={styles.confettiOverlay} pointerEvents="none">
@@ -168,11 +202,12 @@ return (
     style={styles.outlineButton}
    onPress={async () => {
   if (progressDays >= 7) {
-    await AsyncStorage.removeItem('selectedBraveStep');
-    await AsyncStorage.removeItem('braveStepStartDate');
-    setProgressDays(0);
-    setShowCelebration(false);
-  }
+  await AsyncStorage.removeItem('selectedBraveStep');
+  await AsyncStorage.removeItem('braveStepStartDate');
+
+  setProgressDays(0);
+  setShowCelebration(false);
+}
 
   navigation.navigate('BraveStep');
 }}
@@ -227,6 +262,34 @@ return (
     </View>
   </View>
 )}
+{completedSteps.length > 0 && (
+  <View style={styles.accomplishmentsCard}>
+   <Text style={styles.accomplishmentsTitle}>
+   🌱 Growth Journey
+</Text>
+
+    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      {completedSteps.map((step, index) => (
+        <View key={index} style={styles.accomplishmentMiniCard}>
+          <Text style={styles.accomplishmentText}>{step.title}</Text>
+          <Text style={styles.accomplishmentStatus}>Completed</Text>
+<Text style={styles.accomplishmentDate}>
+  {new Date(step.completedAt).toLocaleDateString('en-US', {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+})}
+</Text>
+        </View>
+      ))}
+    </ScrollView>
+    {completedSteps.length > 1 && (
+  <Text style={styles.swipeHint}>
+    Swipe to explore your soft steps →
+  </Text>
+)}
+    </View>
+)}
 
       <Text style={styles.sectionTitle}>How can we support you today?</Text>
 
@@ -257,7 +320,7 @@ return (
         </Text>
       </View>
     </ScrollView>
-      </View>
+  </SafeAreaView>
   );
 }
 
@@ -608,5 +671,56 @@ confettiOverlay: {
   zIndex: 9999,
   elevation: 9999,
   backgroundColor: 'rgba(0,0,0,0.15)',
+},
+accomplishmentsCard: {
+  backgroundColor: Theme.colors.card,
+  borderRadius: 20,
+  padding: Theme.spacing.lg,
+  marginBottom: Theme.spacing.xl,
+},
+
+accomplishmentsTitle: {
+  fontFamily: 'CormorantSemiBold',
+  fontSize: 22,
+  color: Theme.colors.text,
+  marginBottom: 14,
+},
+
+accomplishmentMiniCard: {
+  backgroundColor: Theme.colors.accentSoft,
+  borderRadius: 18,
+  width: 150,
+  padding: 14,
+  marginRight: 12,
+},
+
+accomplishmentCheck: {
+  fontSize: 18,
+  marginBottom: 8,
+},
+
+accomplishmentText: {
+  fontSize: 15,
+  color: Theme.colors.text,
+  lineHeight: 20,
+  marginBottom: 10,
+},
+
+accomplishmentDate: {
+  fontSize: 13,
+  color: Theme.colors.textSecondary,
+},
+accomplishmentStatus: {
+  fontSize: 13,
+  color: Theme.colors.textSecondary,
+  marginBottom: 2,
+},
+swipeHint: {
+  alignSelf: 'flex-start',
+  marginTop: 10,
+  fontFamily: 'CormorantRegular',
+  fontSize: 16,
+  color: Theme.colors.textSecondary,
+  fontStyle: 'italic',
 },
 });
