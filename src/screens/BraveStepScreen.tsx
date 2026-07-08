@@ -285,6 +285,10 @@ export default function BraveStepScreen() {
           new Date().toISOString()
         );
       }
+
+      await braveStepAPI.saveBraveStep({
+          title: selectedStep,
+        })
     }
 
     navigation.navigate('Home');

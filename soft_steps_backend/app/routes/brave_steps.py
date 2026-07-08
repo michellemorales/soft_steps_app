@@ -1,11 +1,12 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from datetime import datetime
 from app.models.brave_steps import (BraveStepCreate, BraveStepAIRequest,
                                      BraveStepAIResponse, BraveStepAIRetry)
 from app.services.database import get_database
 from app.services.brave_step_ai import generate_suggestions, generate_retry_suggestions
+from app.core.security import get_current_user
 
-router = APIRouter(prefix="/brave-steps", tags=["brave-steps"])
+router = APIRouter(tags=["brave-steps"])
 
 #This Route will be used to get AI suggestions based on user input.
 #Currently returns hard-coded suggestions, later will be changed with AI call
@@ -26,18 +27,34 @@ async def retry_brave_step_suggestions(request: BraveStepAIRetry):
 
 #This route would be used to save the final user's selection in db
 @router.post("/")
-async def create_brave_step(brave_step: BraveStepCreate):
+async def create_brave_step(
+    brave_step: BraveStepCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    
     try:
         db = get_database()
+        now = datetime.utcnow()
 
         brave_step_data = brave_step.dict()
-        brave_step_data["created_at"] = datetime.utcnow()
+        brave_step_data["user_id"] = str(current_user["_id"])
+        brave_step_data["updated_at"] = now
 
-        result = db.brave_steps.insert_one(brave_step_data)
+        result = db.brave_steps.update_one(
+            {"user_id": str(current_user["_id"])},
+            {
+                "$set": brave_step_data,
+                "$setOnInsert": {
+                    "created_at": now
+                }
+            },
+            upsert=True
+        )
 
         return {
             "message": "Brave step saved",
-            "id": str(result.inserted_id)
+            "created": result.upserted_id is not None,
+            "id": str(result.upserted_id) if result.upserted_id else None
         }
 
     except Exception as e:
@@ -48,12 +65,16 @@ async def create_brave_step(brave_step: BraveStepCreate):
 
 
 @router.get("/")
-async def get_brave_steps():
+async def get_brave_steps(
+    current_user: dict = Depends(get_current_user)
+):
     try:
         db = get_database()
 
         brave_steps = []
-        cursor = db.brave_steps.find()
+        cursor = db.brave_steps.find({
+            "user_id": str(current_user["_id"])
+        })
 
         for step in cursor:
             step["id"] = str(step["_id"])
