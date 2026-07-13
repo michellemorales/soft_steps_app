@@ -270,7 +270,7 @@ cd soft_steps_backend
 
 # Create virtual environment
 python -m venv soft_steps
-source soft_steps/bin/activate  # On Windows: venv\Scripts\activate
+source soft_steps/bin/activate  # On Windows: .\soft_steps\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
