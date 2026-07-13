@@ -282,7 +282,8 @@ export default function BraveStepScreen() {
       if (!existingStartDate) {
         await AsyncStorage.setItem(
           'braveStepStartDate',
-          new Date().toISOString()
+          new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+          //new Date().toISOString()
         );
       }
 

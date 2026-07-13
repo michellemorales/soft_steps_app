@@ -48,4 +48,17 @@ export const braveStepAPI = {
   }) =>
     api.post('/brave-steps/',step),
 };
+
+//Accomplishment API
+export const accomplishmentAPI = {
+  saveAccomplishment: (step :{
+    title: string;
+    completed_at?: string;
+  }) =>
+    api.post('/accomplishments/', step),
+
+  getAccomplishments: () => 
+    api.get('/accomplishments/'),
+};
+
 export default api;

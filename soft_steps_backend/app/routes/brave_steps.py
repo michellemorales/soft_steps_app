@@ -8,8 +8,7 @@ from app.core.security import get_current_user
 
 router = APIRouter(tags=["brave-steps"])
 
-#This Route will be used to get AI suggestions based on user input.
-#Currently returns hard-coded suggestions, later will be changed with AI call
+#This Route to get AI suggestions based on user input.
 @router.post("/ai-suggestions", response_model=BraveStepAIResponse)
 async def suggest_brave_step(request: BraveStepAIRequest):
     generated_suggestions = generate_suggestions(request.user_input)

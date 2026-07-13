@@ -6,6 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { Theme } from '../constants/theme';
+import { accomplishmentAPI } from '../services/api';
 type CompletedStep = {
   title: string;
   completedAt: string;
@@ -23,11 +24,21 @@ useEffect(() => {
 const loadBraveStep = async () => {
   const savedStep = await AsyncStorage.getItem('selectedBraveStep');
   const savedStartDate = await AsyncStorage.getItem('braveStepStartDate');
-  const savedCompletedSteps = await AsyncStorage.getItem('completedSteps');
 
-if (savedCompletedSteps) {
-  setCompletedSteps(JSON.parse(savedCompletedSteps));
+try{  
+  const accomplishmentsResponse = await accomplishmentAPI.getAccomplishments();
+
+  setCompletedSteps(
+    accomplishmentsResponse.data.accomplishments.map((step: any) => ({
+      title: step.title,
+      completedAt: step.completed_at,
+    }))
+  );
+} catch(error){
+  console.error("Error loading accomplishments.", error);
+  setCompletedSteps([]);
 }
+
   console.log('Saved start date:', savedStartDate);
 console.log('Today:', new Date().toISOString());
 
@@ -64,34 +75,13 @@ setProgressDays(Math.min(differenceInDays, 7));
   }
 };
 useEffect(() => {
-  const saveCompletedStep = async () => {
+  const showCompletionCelebration = async () => {
     if (progressDays >= 7 && braveStep) {
       setShowCelebration(true);
-
-      const alreadySaved = completedSteps.some(
-        (step) => step.title === braveStep
-      );
-
-      if (!alreadySaved) {
-        const updatedCompletedSteps = [
-          ...completedSteps,
-          {
-            title: braveStep,
-            completedAt: new Date().toISOString(),
-          },
-        ];
-
-        setCompletedSteps(updatedCompletedSteps);
-
-        await AsyncStorage.setItem(
-          'completedSteps',
-          JSON.stringify(updatedCompletedSteps)
-        );
-      }
     }
   };
 
-  saveCompletedStep();
+  showCompletionCelebration();
 }, [progressDays]);
 return (
    <SafeAreaView style={{ flex: 1 }}>
@@ -202,6 +192,12 @@ return (
     style={styles.outlineButton}
    onPress={async () => {
   if (progressDays >= 7) {
+
+  await accomplishmentAPI.saveAccomplishment({
+    title: braveStep,
+    completed_at: new Date().toISOString(),
+  });
+
   await AsyncStorage.removeItem('selectedBraveStep');
   await AsyncStorage.removeItem('braveStepStartDate');
 
