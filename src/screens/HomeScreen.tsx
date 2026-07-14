@@ -261,7 +261,7 @@ return (
 {completedSteps.length > 0 && (
   <View style={styles.accomplishmentsCard}>
    <Text style={styles.accomplishmentsTitle}>
-   🌱 Growth Journey
+    Growth Journey
 </Text>
 
     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -298,6 +298,17 @@ return (
         <Text style={styles.navTitle}>Reflection Space</Text>
         <Text style={styles.navSubtitle}>Share your thoughts and feelings</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity
+  style={styles.navCard}
+  onPress={() => navigation.navigate('Music')}
+>
+  <Text style={styles.navTitle}>Calm Sounds</Text>
+
+  <Text style={styles.navSubtitle}>
+    Music and sounds to help you relax
+  </Text>
+</TouchableOpacity>
 
       {/* <TouchableOpacity style={styles.navCard}>
         <Text style={styles.navTitle}>Weekly Check-in</Text>
