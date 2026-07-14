@@ -68,21 +68,56 @@ const differenceInDays =
   Math.floor(differenceInTime / (1000 * 60 * 60 * 24)) + 1;
 
 setProgressDays(Math.min(differenceInDays, 7)); 
+
     }
   } else {
     setIsFirstTimeUser(true);
     setProgressDays(0);
   }
 };
+
 useEffect(() => {
-  const showCompletionCelebration = async () => {
+  const handleStepCompletion = async () => {
     if (progressDays >= 7 && braveStep) {
       setShowCelebration(true);
+
+      const accomplishmentSaved =
+        await AsyncStorage.getItem('accomplishmentSaved');
+
+      if (!accomplishmentSaved) {
+        await accomplishmentAPI.saveAccomplishment({
+          title: braveStep,
+          completed_at: new Date().toISOString(),
+        });
+
+        const completedStep = {
+          title: braveStep,
+          completedAt: new Date().toISOString(),
+        };
+
+        const updatedCompletedSteps = [
+          completedStep,
+          ...completedSteps,
+        ];
+
+        setCompletedSteps(updatedCompletedSteps);
+
+        await AsyncStorage.setItem(
+          'completedSteps',
+          JSON.stringify(updatedCompletedSteps)
+        );
+
+        await AsyncStorage.setItem(
+          'accomplishmentSaved',
+          'true'
+        );
+      }
     }
   };
 
-  showCompletionCelebration();
-}, [progressDays]);
+  handleStepCompletion();
+}, [progressDays, braveStep]);
+
 return (
    <SafeAreaView style={{ flex: 1 }}>
 
@@ -192,11 +227,6 @@ return (
     style={styles.outlineButton}
    onPress={async () => {
   if (progressDays >= 7) {
-
-  await accomplishmentAPI.saveAccomplishment({
-    title: braveStep,
-    completed_at: new Date().toISOString(),
-  });
 
   await AsyncStorage.removeItem('selectedBraveStep');
   await AsyncStorage.removeItem('braveStepStartDate');

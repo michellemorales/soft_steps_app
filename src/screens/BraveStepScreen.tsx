@@ -275,17 +275,11 @@ export default function BraveStepScreen() {
         selectedStep
       );
 
-      const existingStartDate = await AsyncStorage.getItem(
-        'braveStepStartDate'
-      );
-
-      if (!existingStartDate) {
-        await AsyncStorage.setItem(
-          'braveStepStartDate',
-          new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-          //new Date().toISOString()
-        );
-      }
+     await AsyncStorage.setItem(
+  'braveStepStartDate',
+  new Date().toISOString()
+);
+await AsyncStorage.removeItem('accomplishmentSaved');
 
       await braveStepAPI.saveBraveStep({
           title: selectedStep,
