@@ -1,3 +1,4 @@
+import MusicScreen from '../screens/MusicScreen';
 import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer } from '@react-navigation/native';
@@ -16,6 +17,7 @@ export type RootStackParamList = {
   BraveStep: undefined;
   ReflectionSpace: undefined;
   Survey: undefined;
+  Music: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -55,6 +57,7 @@ export default function AppNavigator() {
         <Stack.Screen name="BraveStep" component={BraveStepScreen} />
         <Stack.Screen name="ReflectionSpace" component={ReflectionSpaceScreen} />
         <Stack.Screen name="Survey" component={SurveyScreen} />
+        <Stack.Screen name="Music" component={MusicScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
