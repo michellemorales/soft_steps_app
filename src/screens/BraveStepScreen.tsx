@@ -275,16 +275,15 @@ export default function BraveStepScreen() {
         selectedStep
       );
 
-      const existingStartDate = await AsyncStorage.getItem(
-        'braveStepStartDate'
-      );
+     await AsyncStorage.setItem(
+  'braveStepStartDate',
+  new Date().toISOString()
+);
+await AsyncStorage.removeItem('accomplishmentSaved');
 
-      if (!existingStartDate) {
-        await AsyncStorage.setItem(
-          'braveStepStartDate',
-          new Date().toISOString()
-        );
-      }
+      await braveStepAPI.saveBraveStep({
+          title: selectedStep,
+        })
     }
 
     navigation.navigate('Home');

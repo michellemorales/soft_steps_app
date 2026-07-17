@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.services.database import connect_to_mongo, close_mongo_connection
 from app.routes import auth, reflection, brave_steps
+import app.routes.accomplishments as accomplishments 
 
 app = FastAPI(title=settings.PROJECT_NAME)
 
@@ -26,13 +27,10 @@ async def shutdown_db_client():
 
 # Include routers
 app.include_router(auth.router, prefix=f"{settings.API_V1_PREFIX}/auth", tags=["auth"])
-app.include_router(
-    reflection.router,
-    prefix=f"{settings.API_V1_PREFIX}/reflection",
-    tags=["reflection"]
-)
+app.include_router(accomplishments.router, prefix=settings.API_V1_PREFIX)
+app.include_router(reflection.router, prefix=f"{settings.API_V1_PREFIX}/reflection", tags=["reflection"])
 # Add in brave step endpoint
-app.include_router(brave_steps.router, prefix="/api")
+app.include_router(brave_steps.router, prefix=f"{settings.API_V1_PREFIX}/brave-steps", tags=["brave-steps"])
 
 @app.get("/")
 async def root():

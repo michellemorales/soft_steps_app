@@ -27,6 +27,8 @@ api.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+
+//BraveStep API
 export const braveStepAPI = {
   getAISuggestions: (customStep: string) =>
    api.post('/brave-steps/ai-suggestions', {
@@ -38,5 +40,25 @@ export const braveStepAPI = {
       user_input: customStep,
       previous_suggestions: previousSuggestions,
     }),
+
+  saveBraveStep: (step: {
+    title: string;
+    situation?: string;
+    fear_level?: number;
+  }) =>
+    api.post('/brave-steps/',step),
 };
+
+//Accomplishment API
+export const accomplishmentAPI = {
+  saveAccomplishment: (step :{
+    title: string;
+    completed_at?: string;
+  }) =>
+    api.post('/accomplishments/', step),
+
+  getAccomplishments: () => 
+    api.get('/accomplishments/'),
+};
+
 export default api;
