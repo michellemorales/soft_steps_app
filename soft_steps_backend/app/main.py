@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.services.database import connect_to_mongo, close_mongo_connection
+from app.services.database import connect_to_mongo, close_mongo_connection, create_indexes
 from app.routes import auth, reflection, brave_steps
 import app.routes.accomplishments as accomplishments 
 
@@ -20,6 +20,7 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup_db_client():
     connect_to_mongo()
+    create_indexes()
 
 @app.on_event("shutdown")
 async def shutdown_db_client():

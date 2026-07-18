@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
 
@@ -33,14 +33,5 @@ class BraveStepResponse(BaseModel):
     title: str
     situation: Optional[str] = None
     fear_level: Optional[int] = None
-    created_at: datetime
+    completed_at: datetime = Field(default_factory=datetime.utcnow)
 
-class AccomplishmentCreate(BaseModel):
-    title: str
-    completed_at: Optional[datetime] = None
-
-
-class AccomplishmentResponse(BaseModel):
-    id: str
-    title: str
-    completed_at: datetime

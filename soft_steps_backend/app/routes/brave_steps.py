@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, status
+from pymongo import ReturnDocument
 from datetime import datetime
 from app.models.brave_steps import (BraveStepCreate, BraveStepAIRequest,
                                      BraveStepAIResponse, BraveStepAIRetry)
@@ -39,7 +40,7 @@ async def create_brave_step(
         brave_step_data["user_id"] = str(current_user["_id"])
         brave_step_data["updated_at"] = now
 
-        result = db.brave_steps.update_one(
+        saved_step = db.brave_steps.find_one_and_update(
             {"user_id": str(current_user["_id"])},
             {
                 "$set": brave_step_data,
@@ -47,13 +48,20 @@ async def create_brave_step(
                     "created_at": now
                 }
             },
-            upsert=True
+            upsert=True,
+            return_document=ReturnDocument.AFTER,
         )
 
         return {
             "message": "Brave step saved",
-            "created": result.upserted_id is not None,
-            "id": str(result.upserted_id) if result.upserted_id else None
+            "brave_step": {
+                "id": str(saved_step["_id"]),
+                "title": saved_step["title"],
+                "situation": saved_step.get("situation"),
+                "fear_level": saved_step.get("fear_level"),
+                "created_at": saved_step["created_at"],
+                "updated_at": saved_step["updated_at"],
+            },
         }
 
     except Exception as e:
@@ -63,29 +71,29 @@ async def create_brave_step(
         )
 
 
-@router.get("/")
+@router.get("/active")
 async def get_brave_steps(
     current_user: dict = Depends(get_current_user)
 ):
     try:
         db = get_database()
 
-        brave_steps = []
-        cursor = db.brave_steps.find({
+        brave_step = db.brave_steps.find_one({
             "user_id": str(current_user["_id"])
         })
 
-        for step in cursor:
-            step["id"] = str(step["_id"])
-            del step["_id"]
-            brave_steps.append(step)
+        if not brave_step:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No active step found"
+            )
 
-        return {
-            "brave_steps": brave_steps
-        }
+        brave_step["id"] = str(brave_step.pop("_id"))
+
+        return brave_step
 
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"Error getting brave steps: {str(e)}"
+            detail=f"Error getting brave step: {str(e)}"
         )

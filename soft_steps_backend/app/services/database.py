@@ -20,3 +20,12 @@ def close_mongo_connection():
     if db.client:
         db.client.close()
         print("Closed MongoDB connection")
+
+def create_indexes():
+    database = get_database()
+
+    database.brave_steps.create_index(
+        "user_id",
+        unique = True,
+        name = "unique_bravestep_user_id"
+    )

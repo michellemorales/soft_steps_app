@@ -1,6 +1,6 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, status
 from datetime import datetime
-from app.models.brave_steps import AccomplishmentCreate
+from app.models.accomplishment import AccomplishmentCreate
 from app.services.database import get_database
 from app.core.security import get_current_user
 
@@ -21,10 +21,20 @@ async def create_accomplishment(
 
         result = db.accomplishments.insert_one(data)
 
-        return {
-            "message": "Accomplishment saved",
-            "id": str(result.inserted_id),
-        }
+        saved_accomplishment = db.accomplishments.find_one({
+            "_id": result.inserted_id,
+            "user_id": str(current_user["_id"])
+        })
+
+        if not saved_accomplishment:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Accomplishment was saved but could not be retrieved"
+            )
+        
+        saved_accomplishment["id"] = str(saved_accomplishment.pop("_id"))
+
+        return saved_accomplishment
 
     except Exception as e:
         raise HTTPException(
