@@ -1,6 +1,6 @@
+from datetime import datetime
 from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field, StrictInt, StringConstraints
-from datetime import datetime
 
 #Reusable Types
 StepId = Annotated[
@@ -35,7 +35,7 @@ class ReflectionSessionCreate(BaseModel):
 
 class ReflectionSessionResponse(BaseModel):
     id: str
-    step_id: str
+    step_id: StepId
     step_type: StepType
     step_title: str
     step_status: StepStatus
@@ -48,6 +48,9 @@ class ReflectionMoodUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     mood_score: MoodScore | None
+
+class ReflectionMessage(BaseModel):
+    message: str
 
 class ReflectionMessageCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
