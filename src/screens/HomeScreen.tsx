@@ -1,13 +1,22 @@
 import ConfettiCannon from 'react-native-confetti-cannon';
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  SafeAreaView,
+  Alert,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { Theme } from '../constants/theme';
-import { accomplishmentAPI } from '../services/api';
+import { accomplishmentAPI, braveStepAPI } from '../services/api';
 type CompletedStep = {
+  id: string;
   title: string;
   completedAt: string;
 };
@@ -18,6 +27,7 @@ const [isFirstTimeUser, setIsFirstTimeUser] = useState(true);
 const [showCelebration, setShowCelebration] = useState(false);
 const [progressDays, setProgressDays] = useState(0);
 const [completedSteps, setCompletedSteps] = useState<CompletedStep[]>([]);
+const [activeBraveStepId, setActiveBraveStepId] = useState<string | null>(null);
 useEffect(() => {
   loadBraveStep();
 }, []);
@@ -29,14 +39,32 @@ try{
   const accomplishmentsResponse = await accomplishmentAPI.getAccomplishments();
 
   setCompletedSteps(
-    accomplishmentsResponse.data.accomplishments.map((step: any) => ({
-      title: step.title,
-      completedAt: step.completed_at,
-    }))
-  );
+  accomplishmentsResponse.data.accomplishments.map((step: any) => ({
+    id: step.id,
+    title: step.title,
+    completedAt: step.completed_at,
+  }))
+);
 } catch(error){
   console.error("Error loading accomplishments.", error);
   setCompletedSteps([]);
+}
+
+try {
+  const activeStepResponse =
+    await braveStepAPI.getActiveBraveStep();
+
+  setActiveBraveStepId(activeStepResponse.data.id);
+
+  // Keep Home synchronized with the backend title
+  setBraveStep(activeStepResponse.data.title);
+  setIsFirstTimeUser(false);
+} catch (error: any) {
+  if (error.response?.status === 404) {
+    setActiveBraveStepId(null);
+  } else {
+    console.error('Error loading active brave step.', error);
+  }
 }
 
   console.log('Saved start date:', savedStartDate);
@@ -90,22 +118,27 @@ useEffect(() => {
           completed_at: new Date().toISOString(),
         });
 
-        const completedStep = {
-          title: braveStep,
-          completedAt: new Date().toISOString(),
-        };
+        console.log("Accomplishment saved");
 
-        const updatedCompletedSteps = [
-          completedStep,
-          ...completedSteps,
-        ];
+        const accomplishmentsResponse =
+  await accomplishmentAPI.getAccomplishments();
+  console.log(
+  "Accomplishments after save:",
+  accomplishmentsResponse.data
+);
+console.log(
+  'Accomplishments response:',
+  accomplishmentsResponse.data
+);
 
-        setCompletedSteps(updatedCompletedSteps);
+const updatedCompletedSteps: CompletedStep[] =
+  accomplishmentsResponse.data.accomplishments.map((step: any) => ({
+    id: step.id,
+    title: step.title,
+    completedAt: step.completed_at,
+  }));
 
-        await AsyncStorage.setItem(
-          'completedSteps',
-          JSON.stringify(updatedCompletedSteps)
-        );
+setCompletedSteps(updatedCompletedSteps);
 
         await AsyncStorage.setItem(
           'accomplishmentSaved',
@@ -117,6 +150,8 @@ useEffect(() => {
 
   handleStepCompletion();
 }, [progressDays, braveStep]);
+
+console.log('completedSteps state:', JSON.stringify(completedSteps, null, 2));
 
 return (
    <SafeAreaView style={{ flex: 1 }}>
@@ -295,23 +330,45 @@ return (
 </Text>
 
     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-      {completedSteps.map((step, index) => (
-        <View key={index} style={styles.accomplishmentMiniCard}>
-          <Text style={styles.accomplishmentText}>{step.title}</Text>
-          <Text style={styles.accomplishmentStatus}>Completed</Text>
-<Text style={styles.accomplishmentDate}>
-  {new Date(step.completedAt).toLocaleDateString('en-US', {
-  month: 'short',
-  day: 'numeric',
-  year: 'numeric',
-})}
-</Text>
-        </View>
-      ))}
+      {completedSteps.map((step) => (
+  
+      <TouchableOpacity
+  key={step.id}
+  style={styles.accomplishmentMiniCard}
+  activeOpacity={0.8}
+  onPress={() =>
+    navigation.navigate('ReflectionSpace', {
+      stepId: step.id,
+      stepTitle: step.title,
+      stepStatus: 'completed',
+      stepType: 'accomplishment',
+    })
+  }
+  accessibilityRole="button"
+  accessibilityLabel={`Open reflection for ${step.title}`}
+>
+  <View style={styles.accomplishmentAccent}/>
+<View style={styles.accomplishmentContent}>
+  <Text style={styles.accomplishmentText}>
+    {step.title}
+  </Text>
+
+  <Text style={styles.accomplishmentDate}>
+    {new Date(step.completedAt).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    })}
+  </Text>
+</View>
+
+</TouchableOpacity>
+
+))}
     </ScrollView>
     {completedSteps.length > 1 && (
   <Text style={styles.swipeHint}>
-    Swipe to explore your soft steps →
+    Swipe to explore your milestones →
   </Text>
 )}
     </View>
@@ -323,12 +380,31 @@ return (
         <Text style={styles.navTitle}>Reflection Space</Text>
         <Text style={styles.navSubtitle}>Share your thoughts and feelings</Text>
       </TouchableOpacity> */}
-      <TouchableOpacity style={styles.navCard}
-       onPress={() => navigation.navigate('ReflectionSpace')}>
-        <Text style={styles.navTitle}>Reflection Space</Text>
-        <Text style={styles.navSubtitle}>Share your thoughts and feelings</Text>
-      </TouchableOpacity>
+      <TouchableOpacity
+  style={styles.navCard}
+  onPress={() => {
+    if (!activeBraveStepId) {
+      Alert.alert(
+        'Choose a Brave Step',
+        'Choose a Brave Step before opening Reflection Space.'
+      );
+      return;
+    }
 
+    navigation.navigate('ReflectionSpace', {
+      stepId: activeBraveStepId,
+      stepTitle: braveStep,
+      stepStatus: 'in_progress',
+      stepType: 'active_step',
+    });
+  }}
+>
+  <Text style={styles.navTitle}>Reflection Space</Text>
+
+  <Text style={styles.navSubtitle}>
+    Share your thoughts and feelings
+  </Text>
+</TouchableOpacity>
       <TouchableOpacity
   style={styles.navCard}
   onPress={() => navigation.navigate('Music')}
@@ -721,32 +797,44 @@ accomplishmentsTitle: {
   fontSize: 22,
   color: Theme.colors.text,
   marginBottom: 14,
+  flexShrink: 1,
 },
 
 accomplishmentMiniCard: {
-  backgroundColor: Theme.colors.accentSoft,
-  borderRadius: 18,
-  width: 150,
-  padding: 14,
-  marginRight: 12,
-},
+  backgroundColor: '#F8F0E4',
+  borderRadius: 22,
+  width: 170,
+  marginRight: 14,
+  overflow: 'hidden',
+  flexDirection: 'row',
 
-accomplishmentCheck: {
-  fontSize: 18,
-  marginBottom: 8,
+  borderWidth: 1,
+  borderColor: '#EEDFCB',
+
+  shadowColor: '#000',
+  shadowOpacity: 0.03,
+  shadowRadius: 5,
+  shadowOffset: {
+    width: 0,
+    height: 2,
+  },
+  elevation: 1,
 },
 
 accomplishmentText: {
+  color: Theme.colors.primary,
   fontSize: 15,
-  color: Theme.colors.text,
+  fontWeight: '600',
   lineHeight: 20,
-  marginBottom: 10,
+  flexShrink: 1,
 },
 
 accomplishmentDate: {
-  fontSize: 13,
   color: Theme.colors.textSecondary,
-},
+  fontSize: 13,
+  marginTop: 10,
+}, 
+
 accomplishmentStatus: {
   fontSize: 13,
   color: Theme.colors.textSecondary,
@@ -759,5 +847,16 @@ swipeHint: {
   fontSize: 16,
   color: Theme.colors.textSecondary,
   fontStyle: 'italic',
+},
+accomplishmentAccent: {
+  width: 16,
+  backgroundColor: '#F1DDBF',
+},
+
+accomplishmentContent: {
+  flex: 1,
+  paddingHorizontal: 12,
+  paddingVertical: 12,
+  justifyContent: 'flex-start',
 },
 });
