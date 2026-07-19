@@ -1,4 +1,4 @@
-from pymongo import MongoClient
+from pymongo import MongoClient, ASCENDING, DESCENDING
 from app.core.config import settings
 
 class Database:
@@ -25,7 +25,32 @@ def create_indexes():
     database = get_database()
 
     database.brave_steps.create_index(
-        "user_id",
+        [("user_id", ASCENDING)],
         unique = True,
         name = "unique_bravestep_user_id"
+    )
+
+    database.reflection_sessions.create_index(
+        [
+            ("user_id", ASCENDING),
+            ("step_type", ASCENDING),
+            ("step_id", ASCENDING),
+            ("updated_at", DESCENDING)
+        ],
+        name="reflections_user_step_updated_at"
+    )
+
+    database.reflection_messages.create_index(
+        [
+            ("session_id", ASCENDING),
+            ("user_id", ASCENDING),
+            ("created_at", ASCENDING)
+        ],
+        name="messages_session_user_created_at"
+    )
+
+    database.users.create_index(
+        [("email", ASCENDING)],
+        unique=True,
+        name="unique_user_email"
     )

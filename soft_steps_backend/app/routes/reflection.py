@@ -182,7 +182,7 @@ async def get_reflection_session(
         )
     
     message_cursor = db.reflection_messages.find({
-        "_id": session_id,
+        "session_id": session_id,
         "user_id": user_id,
     }).sort("created_at", 1)
 
