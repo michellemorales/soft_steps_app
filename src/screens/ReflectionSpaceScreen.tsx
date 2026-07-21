@@ -14,7 +14,7 @@ import api from '../services/api';
 import { ChatMessage, ReflectionChatResponse } from '../types';
 
 // Navigation
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 
@@ -28,6 +28,14 @@ export default function ReflectionSpaceScreen() {
     },
   ]);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+const route = useRoute<RouteProp<RootStackParamList, 'ReflectionSpace'>>();
+
+const {
+  stepId,
+  stepTitle,
+  stepStatus,
+  stepType,
+} = route.params;
 
   const [inputText, setInputText] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -86,6 +94,17 @@ export default function ReflectionSpaceScreen() {
         <Text style={styles.subtitle}>
           A gentle place to think through your experience.
         </Text>
+        <View style={styles.currentStepCard}>
+  <Text style={styles.currentStepLabel}>
+    {stepStatus === 'completed'
+      ? 'Reflecting on'
+      : 'Current Brave Step'}
+  </Text>
+
+  <Text style={styles.currentStepTitle}>
+    {stepTitle}
+  </Text>
+</View>
       </View>
 
       <ScrollView
@@ -258,5 +277,24 @@ const styles = StyleSheet.create({
 backButtonText: {
   color: Theme.colors.primary,
   fontSize: Theme.fontSize.md,
+},
+
+currentStepCard: {
+  backgroundColor: Theme.colors.card,
+  borderRadius: 18,
+  padding: Theme.spacing.md,
+  marginTop: Theme.spacing.md,
+},
+
+currentStepLabel: {
+  color: Theme.colors.textSecondary,
+  fontSize: Theme.fontSize.sm,
+  marginBottom: 4,
+},
+
+currentStepTitle: {
+  color: Theme.colors.text,
+  fontSize: Theme.fontSize.lg,
+  fontWeight: '600',
 },
 });

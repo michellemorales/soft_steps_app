@@ -1,4 +1,3 @@
-import MusicScreen from '../screens/MusicScreen';
 import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer } from '@react-navigation/native';
@@ -10,12 +9,18 @@ import HomeScreen from '../screens/HomeScreen';
 import BraveStepScreen from '../screens/BraveStepScreen';
 import ReflectionSpaceScreen from '../screens/ReflectionSpaceScreen';
 import SurveyScreen from '../screens/SurveyScreen';
+import MusicScreen from '../screens/MusicScreen';
 
 export type RootStackParamList = {
   SignUp: undefined;
   Home: undefined;
   BraveStep: undefined;
-  ReflectionSpace: undefined;
+  ReflectionSpace: {
+  stepId: string;
+  stepTitle: string;
+  stepStatus: 'in_progress' | 'completed';
+  stepType: 'active_step' | 'accomplishment';
+};
   Survey: undefined;
   Music: undefined;
 };
@@ -57,7 +62,8 @@ export default function AppNavigator() {
         <Stack.Screen name="BraveStep" component={BraveStepScreen} />
         <Stack.Screen name="ReflectionSpace" component={ReflectionSpaceScreen} />
         <Stack.Screen name="Survey" component={SurveyScreen} />
-        <Stack.Screen name="Music" component={MusicScreen} />
+        <Stack.Screen name="Music" component={MusicScreen}  options={{ headerShown: false }}
+/>
       </Stack.Navigator>
     </NavigationContainer>
   );

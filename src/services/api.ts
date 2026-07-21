@@ -47,7 +47,11 @@ export const braveStepAPI = {
     fear_level?: number;
   }) =>
     api.post('/brave-steps/',step),
+
+    getActiveBraveStep: () =>
+  api.get('/brave-steps/active'),
 };
+
 
 //Accomplishment API
 export const accomplishmentAPI = {
